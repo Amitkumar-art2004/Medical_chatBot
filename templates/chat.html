@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Medical Chatbot</title>
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+<style>
+
+/* BACKGROUND */
+body{
+	margin:0;
+	height:100vh;
+	background: linear-gradient(135deg,#e0e0e0,#c9d6ff);
+	display:flex;
+	justify-content:center;
+	align-items:center;
+	font-family: "Segoe UI";
+}
+
+/* CARD */
+.card{
+	width:450px;
+	height:600px;
+	border-radius:25px;
+	background:white;
+	box-shadow:0 20px 40px rgba(0,0,0,0.1);
+	display:flex;
+	flex-direction:column;
+}
+
+/* HEADER */
+.card-header{
+	padding:15px;
+	border-bottom:1px solid #eee;
+	display:flex;
+	justify-content:space-between;
+	align-items:center;
+}
+
+.header_img{
+	width:40px;
+	height:40px;
+	border-radius:50%;
+}
+
+.video_icon{
+	font-size:20px;
+	color:#6a11cb;
+}
+
+/* CHAT */
+.msg_card_body{
+	flex:1;
+	padding:20px;
+	overflow-y:auto;
+	background:#f8f9fb;
+}
+
+/* MESSAGE */
+.msg_cotainer{
+	background:#ececf1;
+	padding:12px;
+	border-radius:20px;
+	max-width:70%;
+}
+
+.msg_cotainer_send{
+	background: linear-gradient(135deg,#6a11cb,#2575fc);
+	color:white;
+	padding:12px;
+	border-radius:20px;
+	max-width:70%;
+}
+
+.msg_img{
+	width:35px;
+	height:35px;
+	border-radius:50%;
+	margin:0 8px;
+}
+
+/* FOOTER */
+.card-footer{
+	padding:15px;
+	border-top:1px solid #eee;
+}
+
+.type_msg{
+	background:#f1f3f6;
+	border:none;
+	border-radius:20px;
+	padding:10px;
+	width:100%;
+}
+
+/* BUTTONS */
+.send_btn{
+	background: linear-gradient(135deg,#6a11cb,#2575fc);
+	color:white;
+	border:none;
+	border-radius:50%;
+	width:45px;
+	height:45px;
+}
+
+.mic_btn{
+	background:#ff4b5c;
+	color:white;
+	border:none;
+	border-radius:50%;
+	width:45px;
+	height:45px;
+	margin-right:8px;
+}
+
+.upload_btn{
+	background:#6c757d;
+	color:white;
+	border:none;
+	border-radius:50%;
+	width:45px;
+	height:45px;
+	margin-right:8px;
+}
+
+.mic_btn.recording{
+	background:red;
+	transform:scale(1.2);
+}
+
+/* WAVE */
+.wave{
+	display:flex;
+	justify-content:center;
+	margin-top:5px;
+}
+
+.wave span{
+	width:4px;
+	height:10px;
+	margin:2px;
+	background:#6a11cb;
+	animation:wave 1s infinite;
+}
+
+@keyframes wave{
+	0%{height:10px;}
+	50%{height:25px;}
+	100%{height:10px;}
+}
+
+.hidden{display:none;}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<!-- HEADER -->
+<div class="card-header">
+	<div class="d-flex align-items-center">
+		<img src="https://plus.unsplash.com/premium_photo-1739258662666-208c45bb667b?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="header_img">
+		<span class="ml-2 font-weight-bold">Medical Chatbot</span>
+	</div>
+	<i class="fas fa-video video_icon"></i>
+</div>
+
+<!-- CHAT -->
+<div id="messageFormeight" class="msg_card_body"></div>
+
+<!-- FOOTER -->
+<div class="card-footer">
+
+<form id="messageArea" class="d-flex">
+
+	<input type="text" id="text" name="msg"
+	class="type_msg"
+	placeholder="Type your message..." required>
+
+	<!-- FILE INPUT -->
+	<input type="file" id="fileInput" style="display:none;" accept=".pdf,.doc,.docx,image/*">
+
+	<!-- UPLOAD -->
+	<button type="button" id="uploadBtn" class="upload_btn">
+		<i class="fas fa-paperclip"></i>
+	</button>
+
+	<!-- MIC -->
+	<button type="button" id="voice" class="mic_btn">
+		<i class="fas fa-microphone"></i>
+	</button>
+
+	<!-- SEND -->
+	<button type="submit" class="send_btn">
+		<i class="fas fa-paper-plane"></i>
+	</button>
+</form>
+
+<div id="wave" class="wave hidden">
+	<span></span><span></span><span></span><span></span><span></span>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+$(document).ready(function(){
+
+// ===== CHAT =====
+$("#messageArea").on("submit", function(event){
+	event.preventDefault();
+
+	const rawText = $("#text").val();
+
+	var userHtml = `
+	<div class="d-flex justify-content-end align-items-center mb-3">
+		<div class="msg_cotainer_send">${rawText}</div>
+		<img src="https://media.licdn.com/dms/image/v2/D5603AQFQQe9XIDuH9Q/profile-displayphoto-scale_400_400/B56ZwukkSbKAAg-/0/1770307866820?e=1775692800&v=beta&t=vcKmOhVN1FEy60vmNEhhgSmzHpE_2KT-svVpR3H165E" class="msg_img">
+	</div>`;
+
+	$("#text").val("");
+	$("#messageFormeight").append(userHtml);
+
+	$.ajax({
+		data: { msg: rawText },
+		type: "POST",
+		url: "/get",
+	}).done(function(data){
+
+		var botHtml = `
+		<div class="d-flex justify-content-start align-items-center mb-3">
+			<img src="https://plus.unsplash.com/premium_photo-1739258662666-208c45bb667b?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="msg_img">
+			<div class="msg_cotainer">${data}</div>
+		</div>`;
+
+		$("#messageFormeight").append(botHtml);
+	});
+});
+
+// ===== FILE UPLOAD =====
+$("#uploadBtn").click(function(){
+	$("#fileInput").click();
+});
+
+$("#fileInput").change(function(){
+	var file = this.files[0];
+
+	if(file){
+		var fileHtml = `
+		<div class="d-flex justify-content-end align-items-center mb-3">
+			<div class="msg_cotainer_send">📎 ${file.name}</div>
+			<img src="/static/user.jpeg" class="msg_img">
+		</div>`;
+
+		$("#messageFormeight").append(fileHtml);
+	}
+});
+
+// ===== VOICE =====
+let recognition;
+const voiceBtn = document.getElementById("voice");
+const wave = document.getElementById("wave");
+
+voiceBtn.addEventListener("mousedown", startRecording);
+voiceBtn.addEventListener("mouseup", stopRecording);
+
+function startRecording(){
+	recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+	recognition.start();
+
+	voiceBtn.classList.add("recording");
+	wave.classList.remove("hidden");
+
+	recognition.onresult = function(event){
+		const text = event.results[0][0].transcript;
+		$("#text").val(text);
+		$("#messageArea").submit();
+	};
+}
+
+function stopRecording(){
+	if(recognition){ recognition.stop(); }
+	voiceBtn.classList.remove("recording");
+	wave.classList.add("hidden");
+}
+
+});
+
+</script>
+
+</body>
+</html>
